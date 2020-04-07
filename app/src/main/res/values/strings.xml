@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">traffic_application</string>
+    <string name="traffic_scotland">Traffic Scotland</string>
+    <string name="title">Title</string>
+    <string name="titles">TITLEs</string>
+    <string name="titlesasdasdasda" />
+    <string name="title_activity_maps">Map</string>
+
+    <string-array name="feedValues">
+        <item>Roadworks</item>
+        <item>Planned Roadworks</item>
+        <item>Current Incidents</item>
+    </string-array>
+    <string name="title_activity_tabbed">TabbedActivity</string>
+    <string name="tab_text_1">Tab 1</string>
+    <string name="tab_text_2">Tab 2</string>
+</resources>

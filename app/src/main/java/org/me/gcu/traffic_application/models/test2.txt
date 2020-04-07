@@ -1,0 +1,303 @@
+package org.me.gcu.traffic_application;
+
+import androidx.annotation.MainThread;
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Context;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import org.me.gcu.traffic_application.Adapter.ItemListAdapter;
+import org.me.gcu.traffic_application.models.Item;
+import org.me.gcu.traffic_application.models.ItemChannel;
+import org.w3c.dom.Text;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+    private TextView dataDisplay;
+    private String result;
+    private Button startButton;
+    private TextView title;
+    private TextView description;
+    private TextView posted;
+    // Create new item
+    private Item trafficItem = new Item();
+    private ItemChannel itemChannel = new ItemChannel();
+
+    //Keep track of the scope using enums
+    private HandleXml.ParserScope scope = HandleXml.ParserScope.Channel;
+
+    LinearLayout layout;
+
+    // Traffic Scotland URLs
+    //private String urlSource = "https://trafficscotland.org/rss/feeds/roadworks.aspx";
+    //private String urlSource = "https://trafficscotland.org/rss/feeds/plannedroadworks.aspx";
+    private String urlSource = "https://trafficscotland.org/rss/feeds/roadworks.aspx";
+    private HandleXml obj;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        ListView listView =(ListView)findViewById(R.id.listViews);
+
+        title = (TextView)findViewById(R.id.title);
+        startButton = (Button)findViewById(R.id.startButton);
+        startButton.setOnClickListener(this);
+    }
+
+    public void fetch(){
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try{
+                    URL url= new URL(urlSource);
+                    HttpURLConnection connect = (HttpURLConnection)url.openConnection();
+                    connect.setReadTimeout(10000);
+                    connect.setConnectTimeout(15000);
+                    connect.setRequestMethod("GET");
+                    connect.setDoInput(true);
+                    connect.connect();
+
+                    InputStream stream = connect.getInputStream();
+
+                    XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+                    factory.setNamespaceAware(true);
+                    XmlPullParser myparser = factory.newPullParser();
+                    myparser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
+                    myparser.setInput(stream,null);
+
+                    parseXML(myparser);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread.start();
+
+    }
+    public ItemChannel parseXML(XmlPullParser myparser) {
+
+        try {
+            int event = myparser.getEventType();
+            while (event != XmlPullParser.END_DOCUMENT) {
+                switch (event) {
+                    case XmlPullParser.START_TAG:
+                        //Log.i("mytag", "test" + myparser.getName().toLowerCase());
+                        switch (myparser.getName().toLowerCase()){
+                            case "rss":
+                                // Do nothing
+                                Log.i("tagLog", "rss");
+                                break;
+                            case "channel":
+                                // Do nothing
+                                scope = HandleXml.ParserScope.Channel;
+                                Log.i("tagLog", "channel");
+                                break;
+                            case "item":
+                                // create new instance of an item class
+                                scope = HandleXml.ParserScope.Item;
+                                // (make an item class)
+                                Log.i("tagLog", "item");
+                                break;
+                            case "title":
+                                String title = myparser.nextText();
+                                //Checks if the tag is part of the channel
+                                //if so then it will set the channel info
+                                //to not get confused with the item title
+                                if(scope.equals(HandleXml.ParserScope.Channel)){
+                                    itemChannel.setTitle(title);
+                                }else{
+                                    trafficItem.setTitle(title);
+                                    Log.i("tetl", trafficItem.getTitle());
+                                }
+                                break;
+                            case "description":
+                                String desc = myparser.nextText();
+
+                                if(scope.equals(HandleXml.ParserScope.Channel)){
+                                    itemChannel.setDescription(desc);
+                                }else{
+                                    trafficItem.setDescription(desc);
+
+                                }
+
+                                break;
+                            case "pubDate":
+                                String DatePublished = myparser.nextText();
+                                try{
+                                    Date date = new SimpleDateFormat("E, dd MM YYYY HH:mm:ss z").parse(DatePublished);
+                                    trafficItem.setPublishDate(date);
+                                } catch (ParseException e) {
+                                    e.printStackTrace();
+                                }
+                                break;
+                            default:
+                                // Do nothing
+                                break;
+                        }
+
+                        break;
+                    case XmlPullParser.END_TAG:
+
+                        if(myparser.getName()!=null){
+                            //Log.i("ENDTAG", myparser.getName());
+                        }
+                        //Item has ended
+                        if(myparser.getName().toLowerCase().equalsIgnoreCase("item") && scope == HandleXml.ParserScope.Item){
+                            //Removes HTML Tags from description
+                            trafficItem.setDescription(trafficItem.getDescription().replaceAll("<br />", "\\\n"));
+                            Log.i("desx", trafficItem.getDescription());
+                            itemChannel.addItemList(trafficItem);
+                            //trafficItem.addItemList(trafficItem);
+
+                            trafficItem = new Item();
+                            scope = HandleXml.ParserScope.Channel;
+                            //Log.i("TRy", Object(itemChannel.getChannelItems()));
+
+                        }
+                        // Save the item to a list created up at the top
+                        // clear the item
+                        break;
+                    default:
+                        if(myparser.getName() != null){
+                            //Log.i("check:", myparser.getName());
+                        }
+                        break;
+                }
+                event = myparser.next();
+            }
+            final ItemListAdapter adapter = new ItemListAdapter(this, R.layout.adapter_view_layout, itemChannel.getChannelItems());
+            final ListView listView = findViewById(R.id.listViews);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    listView.setAdapter(adapter);
+
+
+                }
+            });
+
+
+        }catch (XmlPullParserException e){
+            Log.i("error", e.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        //Log.i("info", itemChannel.getTitle());
+        //Log.i("ItemInfo:", String.valueOf(trafficItem.getItemList()));
+        //ItemListAdapter adapter = new ItemListAdapter(this, R.layout.adapter_view_layout, (ArrayList<Item>) itemChannel.getChannelItems());
+        //ListView listView =(ListView)findViewById(R.id.listViews);
+        //listView.setAdapter(adapter);
+        return itemChannel;
+    }
+
+    @Override
+    public void onClick(View v) {
+        fetch();
+
+
+    }
+}
+
+
+
+                                        if(myparser.getName().equalsIgnoreCase("georss:point")){
+                                            Log.i("hit", "We hit geo");
+                                            scope = ParserScope.Coordinates;
+                                            String latLong = myparser.nextText();
+                                            String[] latlonArray = latLong.split(" ");
+                                            //Double lat = Double.parseDouble(latlonArray[0]);
+                                            //Double lon = Double.parseDouble(latlonArray[1]);
+                                            trafficItem.setLat(latlonArray[0]);
+                                            trafficItem.setLon(latlonArray[1]);
+                                            //Log.i("Lat", (String.valueOf(lat)));
+
+                                        }
+
+
+
+                                              try {
+                                                  ItemListAdapter adapter = new ItemListAdapter(this, R.layout.adapter_view_layout, obj.fetchXml());
+                                                  listView.setAdapter(adapter);
+                                                  adapter.notifyDataSetChanged();
+
+
+                                              } catch (XmlPullParserException e) {
+                                                  e.printStackTrace();
+                                              }
+
+
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/colorDARKBLUE"
+    android:focusableInTouchMode="true"
+
+
+    >
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/inputDate"
+        android:layout_width="match_parent"
+        android:drawableRight="@drawable/ic_date_range_black_24dp"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:textColor="#FFF"
+        android:ems="10"
+        android:inputType="date"
+        android:text="enterDate" />
+    <FrameLayout
+        android:id="@+id/fragment_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/bottom_navigation"
+        android:layout_marginBottom="6dp">
+
+
+
+
+        <ListView
+            android:id="@+id/listViews"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+
+            android:layout_marginStart="2dp"
+            android:layout_marginLeft="2dp"
+            android:layout_marginTop="50dp"></ListView>
+    </FrameLayout>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        android:layout_width="match_parent"
+        app:labelVisibilityMode="labeled"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        app:menu="@menu/bottom_navigation"
+        android:background="?android:attr/windowBackground"
+        app:itemBackground="@color/colorDARKBLUE">
+
+    </com.google.android.material.bottomnavigation.BottomNavigationView>
+
+
+</RelativeLayout>
