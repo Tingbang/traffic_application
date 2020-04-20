@@ -1,5 +1,6 @@
+// Student Name: Darren Lally
+// Student ID: S1622370
 package org.me.gcu.traffic_application.Fragments;
-
 import android.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;

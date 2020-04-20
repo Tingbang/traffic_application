@@ -1,5 +1,6 @@
+// Student Name: Darren Lally
+// Student ID: S1622370
 package org.me.gcu.traffic_application.Adapter;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,8 +11,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.me.gcu.traffic_application.Classes.Item;
 import org.me.gcu.traffic_application.R;
-import org.me.gcu.traffic_application.models.Item;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -19,10 +20,9 @@ import java.util.Calendar;
 import java.util.TimeZone;
 
 public class ItemRecycleAdapter extends RecyclerView.Adapter<ItemRecycleAdapter.ItemRecyleHolder> implements Filterable {
-    //private final MainActivity mActivty;
     private ArrayList<Item> mArrayList;
     private ArrayList<Item> mArrayListCopy;
-    //private itemFilter
+    private ArrayList<Item> mRoadworks;
 
     @Override
     public Filter getFilter() {
@@ -41,27 +41,25 @@ public class ItemRecycleAdapter extends RecyclerView.Adapter<ItemRecycleAdapter.
             title =itemView.findViewById(R.id.title);
             desc =itemView.findViewById(R.id.desc);
             pubDate =itemView.findViewById(R.id.pubDate);
-            startDate =itemView.findViewById(R.id.startDATE);
+
 
         }
     }
-    public ItemRecycleAdapter(ArrayList<Item> itemList){
+    public ItemRecycleAdapter(ArrayList<Item> itemList, ArrayList<Item> otherList){
         this.mArrayList = itemList;
-        this.mArrayListCopy = itemList;
+        this.mRoadworks = itemList;
+        this.mArrayListCopy =itemList;
 
+        Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+        calendar.set(year, month, day);
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE, dd MMM");
+        String dateString1 = sdf.format(calendar.getTime());
         notifyDataSetChanged();
 
-    }
-
-    public void set_data(ArrayList<Item>newList){
-        if(mArrayList != null){
-            mArrayList.clear();
-            mArrayList =newList;
-            notifyDataSetChanged();
-        }else{
-            mArrayList = newList;
-        }
-       // notifyDataSetChanged();
     }
 
     public void updateData(ArrayList<Item> newList){
@@ -70,14 +68,6 @@ public class ItemRecycleAdapter extends RecyclerView.Adapter<ItemRecycleAdapter.
         this.mArrayList.addAll(newList);
         int size = this.mArrayList.size();
         notifyDataSetChanged();
-
-    }
-    public void RemoveData(ArrayList<Item> newList){
-        int size = this.mArrayList.size();
-        this.mArrayList.clear();
-        //this.mArrayList =newList;
-        notifyItemRangeRemoved(0,size);
-
     }
 
     @NonNull
@@ -95,13 +85,11 @@ public class ItemRecycleAdapter extends RecyclerView.Adapter<ItemRecycleAdapter.
         holder.title.setText(currentItem.getTitle());
         holder.desc.setText(currentItem.getDescription());
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
-        holder.pubDate.setText(sdf.format(currentItem.getPublishDate()));
-        //holder.startDate.setText(sdf.format(currentItem.getStartDate()));
-
+        holder.pubDate.setText(currentItem.getDatish());
     }
 
     @Override
-    public int getItemCount() {
+        public int getItemCount() {
         return mArrayList.size();
     }
 
@@ -109,40 +97,31 @@ public class ItemRecycleAdapter extends RecyclerView.Adapter<ItemRecycleAdapter.
     private Filter itemFilter = new Filter() {
         @Override
         protected FilterResults performFiltering(CharSequence constraint) {
-            //mArrayListCopy.clear();
-            //mArrayListCopy = mArrayList;
 
             SimpleDateFormat format = new SimpleDateFormat("ddd, dd MMM");
             format.setTimeZone(TimeZone.getTimeZone("UTC"));
             Calendar currentDate = Calendar.getInstance();
-            //String timeSTR = format.format(currentDate.getTime());
-            //constraint = timeSTR;
 
             ArrayList<Item> filteredList = new ArrayList<>();
             if(constraint == null || constraint.length() ==0){
-                filteredList.addAll(mArrayListCopy);
+                filteredList.addAll(mArrayList);
             }else{
-                //String filterPattern = constraint.toString().toLowerCase().trim();
 
-                for(Item item : mArrayListCopy){
-                    if(item.getDatish().equals(constraint)){
-                        filteredList.add(item);
-
-                    }
+                for(Item item : mArrayList){
+                    if(item.getDatish().equals(constraint)){filteredList.add(item);}
                 }
-
             }
+
             FilterResults results = new FilterResults();
             results.values = filteredList;
-            //Log.i("search", String.valueOf(filteredList));
+
             return results;
         }
 
-
         @Override
         protected void publishResults(CharSequence constraint, FilterResults results) {
-            mArrayListCopy.clear();
-            mArrayListCopy.addAll((ArrayList)results.values);
+            mRoadworks.clear();
+            mRoadworks.addAll((ArrayList)results.values);
             notifyDataSetChanged();
 
         }

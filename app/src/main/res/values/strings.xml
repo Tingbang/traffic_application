@@ -1,4 +1,6 @@
 <resources>
+    <!--// Student Name: Darren Lally
+// Student ID: S1622370 -->
     <string name="app_name">traffic_application</string>
     <string name="traffic_scotland">Traffic Scotland</string>
     <string name="title">Title</string>

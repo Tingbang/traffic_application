@@ -1,4 +1,7 @@
-package org.me.gcu.traffic_application.models;
+// Student Name: Darren Lally
+// Student ID: S1622370
+package org.me.gcu.traffic_application.Classes;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -10,8 +13,8 @@ public class Item {
     private String Title;
     private String Description;
     private String Link;
-    private String Lat;
-    private String Lon;
+    private Double Lat;
+    private Double Lon;
     private String Coordinates;
     private Date pubDate;
     private String datish;
@@ -19,10 +22,11 @@ public class Item {
     private Date endDate;
     private ArrayList<Item> item_list;
 
+
     //Inital constructor
     public Item(){
-        this.Lat = "";
-        this.Lon = "";
+        this.Lat = 0.0;
+        this.Lon = 0.0;
         this.datish= "";
         this.Title = "";
         this.Description = "";
@@ -37,7 +41,7 @@ public class Item {
     }
 
     //Pass Item Details in and set to data passed in.
-    public Item(String title, String desc,String datish, String link, String coordinates, Date DatePublished, String lat, String lon, Date start_date, Date EndDate, ArrayList<Item> channelItems){
+    public Item(String title, String desc, String datish, String link, String coordinates, Date DatePublished, Double lat, Double lon, Date start_date, Date EndDate, ArrayList<Item> channelItems){
         //Set Item details
         this.Title = title;
         this.datish =datish;
@@ -57,12 +61,12 @@ public class Item {
     public String getDatish(){return datish;}
     public String getDescription(){return Description;}
     public String getLink(){return Link;}
-    public String getCoordinates(){return Coordinates;}
-    public String getLat(){return Lat;}
+    public Double getLat(){return Lat;}
     public Date getPublishDate(){return pubDate;}
     public Date getStartDate(){return startDate;}
     public Date getEndDate(){return endDate;}
     public ArrayList getItemList(){return item_list;}
+    public double getLon(){return Lon;}
     //Setters
     public void setTitle(String title){Title = title;}
     public void setDatish(String dat){datish = dat;}
@@ -71,8 +75,13 @@ public class Item {
     public void setPublishDate(Date DatePublished){pubDate = DatePublished;}
     public void setCoord(String coordinates){Coordinates = coordinates;}
     public void setStartDate(Date start_date){startDate = start_date;}
-    public void setLat(String lat){Lat=lat;}
-    public void setLon(String lon){Lon=lon;}
+    public void setLat(Double lat){Lat=lat;}
+    public void setLon(Double lon){Lon=lon;}
+
+
+    public LatLng getCoordinates(){
+        return new LatLng(Lat,Lon);
+    }
     //public void addItemList(Item item){item_list.add(item);}
 
 

@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-
+<!--// Student Name: Darren Lally
+// Student ID: S1622370 -->
 <androidx.cardview.widget.CardView android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="200sp"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_gravity="center"
     android:layout_margin="10dp"
+    android:background="@drawable/white_border"
     android:id="@+id/card_container"
     android:elevation="6dp"
     app:cardBackgroundColor="#171F38"
@@ -14,7 +16,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="110dp">
+        android:layout_height="180dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -28,17 +30,17 @@
                 android:layout_margin="5dp"
                 android:text="title"
                 android:textColor="@color/colorPINK"
-                android:textSize="15sp"
+                android:textSize="16sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/desc"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="81dp"
                 android:layout_margin="5dp"
                 android:text="Desc"
                 android:textColor="@color/colorPINK"
-                android:textSize="9sp"
+                android:textSize="14sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -48,22 +50,9 @@
                 android:layout_margin="5dp"
                 android:text="pubDate"
                 android:textColor="@color/colorPINK"
-                android:textSize="7dp"
+                android:textSize="10sp"
+                android:textStyle="bold" />
 
-                />
-
-            <TextView
-                android:id="@+id/startDATE"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:text="startdat"
-                android:textColor="@color/colorPINK"
-                android:textSize="7dp"
-
-                />
         </LinearLayout>
     </LinearLayout>
-
-
 </androidx.cardview.widget.CardView>

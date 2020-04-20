@@ -1,11 +1,8 @@
-package org.me.gcu.traffic_application.models;
-
-import androidx.annotation.NonNull;
-
+// Student Name: Darren Lally
+// Student ID: S1622370
+package org.me.gcu.traffic_application.Classes;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-import java.util.stream.Stream;
 
 public class ItemChannel extends ArrayList<ItemChannel> {
 
